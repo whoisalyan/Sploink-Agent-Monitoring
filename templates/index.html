@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sploink | Agent Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Sploink Dashboard</h1>
+            <div class="status-meta">Monitoring {{ sessions|length }} active sessions</div>
+        </header>
+
+        <div class="session-grid">
+            {% for session in sessions %}
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <h2 style="margin: 0; font-size: 1.2rem;">Session: {{ session.id[:12] }}...</h2>
+                    <span class="status-badge status-{{ session.status }}">{{ session.status }}</span>
+                </div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                    Last updated: {{ session.last_updated.strftime('%H:%M:%S') }}
+                </div>
+                <a href="{{ url_for('session_detail', session_id=session.id) }}" class="btn btn-primary" style="width: calc(100% - 2rem); text-align: center;">View Insights</a>
+            </div>
+            {% else %}
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <p>No agent activity detected yet.</p>
+                <p style="color: var(--text-secondary)">Run the agent simulator to start ingestion.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>

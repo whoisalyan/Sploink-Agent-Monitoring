@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session {{ session.id[:8] }} | Sploink</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <a href="{{ url_for('index') }}" style="color: var(--accent-color); text-decoration: none;">&larr; Back</a>
+                <h1>Session {{ session.id[:12] }}...</h1>
+            </div>
+            <span class="status-badge status-{{ session.status }}">{{ session.status }}</span>
+        </header>
+
+        <section class="insights">
+            <h3 style="margin-top: 0;">Automated Insights</h3>
+            {% if session.status == 'healthy' %}
+                <p>No behavioral issues detected. The agent is following a logical progression.</p>
+            {% elif session.status == 'looping' %}
+                <p><strong>Warning:</strong> Potential execution loop detected. The agent is repeating actions with highly similar inputs.</p>
+            {% elif session.status == 'drifting' %}
+                <p><strong>Notice:</strong> Behavioral drift detected. The distribution of actions has shifted significantly from the start of the session.</p>
+            {% elif session.status == 'failing' %}
+                <p><strong>Critical:</strong> High failure rate or consecutive errors detected. The agent may be stuck or misconfigured.</p>
+            {% endif %}
+            
+            <div style="display: flex; gap: 2rem; margin-top: 1rem; font-size: 0.9rem;">
+                <div>Total Steps: <strong>{{ events|length }}</strong></div>
+                <div>Success Rate: <strong>{{ success_rate|round(1) }}%</strong></div>
+            </div>
+        </section>
+
+        <h3>Event Timeline</h3>
+        <div class="event-list">
+            {% for event in events|sort(attribute='step', reverse=True) %}
+            {% set meta = event.metadata_json|from_json if event.metadata_json else {} %}
+            <div class="event-item {{ meta.get('status', 'success') }}">
+                <div style="display: flex; justify-content: space-between;">
+                    <strong>Step {{ event.step }}: {{ event.action }}</strong>
+                    <span style="font-size: 0.8rem;">{{ meta.get('status', 'success') }}</span>
+                </div>
+                <div class="event-meta">
+                    <span>Input: <code>{{ event.input_data }}</code></span>
+                </div>
+                {% if event.output_data %}
+                <div style="margin-top: 0.5rem;">
+                    <span style="font-size: 0.8rem; color: var(--text-secondary);">Output:</span>
+                    <pre>{{ event.output_data }}</pre>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
